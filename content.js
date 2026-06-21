@@ -372,7 +372,7 @@ function addBulkDownloadButton() {
 
     const final = [...byFileId.values()]
       .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
-      .map(({ priority, ...d }) => d);
+      .map(({ priority: _priority, ...d }) => d);
 
     if (final.length === 0) {
       // Non-blocking guidance (per US4 / harden spec). Metadata JSON was still attempted.

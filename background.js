@@ -10,7 +10,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     const { items = [], folder = 'chatgpt-images' } = msg;
     if (items.length === 0) {
       sendResponse({ status: 'nothing-to-do' });
-      return;
+      return false;
     }
 
     let done = 0;
@@ -21,7 +21,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         chrome.downloads.download({
           url: item.url,
           filename: `${folder}/${item.name}`
-        }, (downloadId) => {
+        }, () => {
           if (chrome.runtime.lastError) {
             console.warn('[BulkDL BG] download error for', item.name, chrome.runtime.lastError);
           }
@@ -38,7 +38,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.action === 'showDefaultDownloadsFolder') {
     chrome.downloads.showDefaultFolder();
     sendResponse({ status: 'shown' });
-    return;
+    return false;
   }
 
   if (msg.action === 'getDownloadFolder') {
@@ -52,7 +52,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     const newFolder = (msg.folder || 'chatgpt-images').trim().replace(/[\\/:*?"<>|]/g, '_').replace(/^\.+|\.+$/g, '');
     if (!newFolder) {
       sendResponse({ status: 'invalid' });
-      return;
+      return false;
     }
     chrome.storage.local.set({ downloadFolder: newFolder }, () => {
       sendResponse({ status: 'saved', folder: newFolder });
@@ -60,8 +60,8 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     return true;
   }
 
-  // Unknown message
   sendResponse({ status: 'unknown' });
+  return false;
 });
 
 // Make sure the worker stays alive for a bit if needed on install
