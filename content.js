@@ -50,18 +50,19 @@ function addBulkDownloadButton() {
     // Download metadata JSON for conversation dates/times and folder structure.
     // Uses the same backend APIs the ChatGPT web UI calls (files/library/* for directories/folders + conversations list).
     // When the page context is authenticated, these calls succeed and the JSON is saved next to the images.
+    let meta = {
+      scrapedAt: new Date().toISOString(),
+      url: location.href,
+      folderId: null,
+      isImagesPage: isImagesPage,
+      title: document.title
+    };
     try {
       const folderIdMatch = location.pathname.match(/\/d\/([a-f0-9-]+)/i);
-      const folderId = folderIdMatch ? folderIdMatch[1] : null;
-      const meta = {
-        scrapedAt: new Date().toISOString(),
-        url: location.href,
-        folderId: folderId,
-        isImagesPage: isImagesPage,
-        title: document.title
-      };
+      meta.folderId = folderIdMatch ? folderIdMatch[1] : null;
 
       const apiCalls = [];
+      const folderId = meta.folderId;
       if (folderId) {
         apiCalls.push(
           fetch(`/backend-api/files/library/directories/path?directory_id=${folderId}`, {credentials: 'include'})
@@ -187,24 +188,88 @@ function addBulkDownloadButton() {
       downloads.push({ url: img.src, name });
     });
 
+    // Prefer structured data from the metadata fetches (imageNodes for folders, recentUploadedImages for /images/).
+    // This makes collection work even on virtualized views where not all <img> are in DOM yet.
+    // Falls back to (or supplements) the DOM walk above. Matches research + plan decisions.
+    const apiImageCandidates = [];
+    const tryAddFrom = (list, defaultPrefix) => {
+      if (!list) return;
+      const arr = Array.isArray(list) ? list : (list.data || list.nodes || list.items || []);
+      (Array.isArray(arr) ? arr : []).forEach((item, idx) => {
+        // Common shapes seen in OpenAI file/library responses
+        const url = item.url || item.file_url || item.src || item.download_url ||
+                    (item.asset && (item.asset.url || item.asset.src)) ||
+                    (item.image && (item.image.url || item.image.src)) || '';
+        if (!url || !url.startsWith('http')) return;
+        // Strict origin allowlist (fixes loose substring that Codacy-style scanners flag).
+        // Only accept known OpenAI/ChatGPT CDN + estuary paths from the site's own responses.
+        let allowed = false;
+        try {
+          const u = new URL(url);
+          const host = u.hostname.toLowerCase();
+          const path = u.pathname || '';
+          if (host.endsWith('.oaiusercontent.com') ||
+              host === 'cdn.openai.com' ||
+              host.endsWith('.openai.com') ||
+              (host === 'chatgpt.com' && path.includes('/backend-api/estuary')) ||
+              host.endsWith('.chatgpt.com')) {
+            allowed = true;
+          }
+        } catch (e) {}
+        if (!allowed) return;
+        let name = item.name || item.filename || item.title || item.prompt || item.alt ||
+                   (item.asset && item.asset.name) || `${defaultPrefix}-${String(idx+1).padStart(4,'0')}`;
+        // quick sanitize
+        name = name.replace(/[^a-z0-9._-]/gi, '_').replace(/_{2,}/g, '_');
+        if (!/\.(png|jpg|jpeg|webp|gif)$/i.test(name)) {
+          const m = url.match(/\.(\w+)(?:\?|$)/);
+          name += '.' + (m ? m[1] : 'png');
+        }
+        apiImageCandidates.push({ url, name, origin: 'api' });
+      });
+    };
+    if (meta.imageNodes) tryAddFrom(meta.imageNodes, 'api-image');
+    if (meta.recentUploadedImages) tryAddFrom(meta.recentUploadedImages, 'api-upload');
+
+    // Merge: prefer API entries (better names + complete list), add any extra from DOM that weren't covered.
+    // (Note: on URL overlap we currently keep the DOM-extracted name; API is appended only for new ones.)
+    apiImageCandidates.forEach(d => {
+      if (!downloads.some(x => x.url === d.url)) downloads.push({ url: d.url, name: d.name });
+    });
+    // keep any pure-DOM ones that API didn't have
+    // (already in downloads array)
+
     // Dedup final
     const final = downloads.filter((d, idx, self) => 
       self.findIndex(x => x.url === d.url) === idx
     );
 
     if (final.length === 0) {
-      alert('No images found. Scroll/load the grid fully, ensure real content (interact if "Just a moment..."), try again. (Metadata JSON may still have been saved.)');
-      btn.disabled = false;
-      btn.textContent = originalText;
+      // Non-blocking guidance (per US4 / harden spec). Metadata JSON was still attempted.
+      btn.textContent = '⚠️ No images found. Scroll grid fully + interact (CF?) then retry. JSON may still be in chatgpt-images/.';
+      console.warn('[ChatGPT Bulk] 0 images after collection. Check console + page state. Metadata JSON may have saved to chatgpt-images/.');
+      setTimeout(() => {
+        btn.textContent = originalText;
+        btn.disabled = false;
+      }, 6000);
       return;
     }
 
-    btn.textContent = `⬇️ Downloading ${final.length} images...`;
+    btn.textContent = `⬇️ Downloading ${final.length} images to chatgpt-images/ (allow multi-dl prompt if shown)`;
 
     // Use chrome.downloads for subfolder (like timestamped exporters). Falls back to <a> if no perm.
     // Target the folder the user referenced: ~/Downloads/chatgpt-images (all bulk runs accumulate here; browser will (1), (2) etc on name conflicts).
     const folder = 'chatgpt-images';
     const useDownloadsAPI = chrome && chrome.downloads && chrome.downloads.download;
+
+    function fallbackDownload(d) {
+      const a = document.createElement('a');
+      a.href = d.url;
+      a.download = d.name;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
 
     final.forEach((d, i) => {
       setTimeout(() => {
@@ -224,26 +289,18 @@ function addBulkDownloadButton() {
 
         if (i === final.length - 1) {
           setTimeout(() => {
-            btn.textContent = `✅ ${final.length} images + metadata.json to ${folder}/`;
+            btn.textContent = `✅ ${final.length} imgs + JSON → ~/Downloads/${folder}/ (check subfolder)`;
+            console.log(`[ChatGPT Bulk] ${final.length} downloads + JSON to ${folder}/ subfolder. Allow Chrome multi-downloads prompt if shown; check inside Downloads/${folder}/ .`);
             setTimeout(() => {
               btn.textContent = originalText;
               btn.disabled = false;
-            }, 4000);
+            }, 5000);
           }, 1500);
         }
       }, i * 50);
     });
 
-    function fallbackDownload(d) {
-      const a = document.createElement('a');
-      a.href = d.url;
-      a.download = d.name;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-    }
-
-    console.log(`[ChatGPT Bulk] Triggered ${final.length} image downloads + metadata JSON to ${folder}/ subfolder (or root if no perm).`);
+    console.log(`[ChatGPT Bulk] Triggered ${final.length} + JSON to ${folder}/ (API:${apiImageCandidates.length} DOM-fb:${downloads.length - apiImageCandidates.length}). Allow multi-dl prompt; files in ~/Downloads/${folder}/`);
   };
 
   document.body.appendChild(btn);

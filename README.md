@@ -53,8 +53,8 @@ We plan to publish to the Chrome Web Store once we have a few more users and pol
    - Collect all qualifying images from the OpenAI CDN
    - Download a `*-metadata.json` file with full folder + conversation timing data
    - Trigger the image downloads (staggered to be browser-friendly)
-6. Allow the "multiple downloads" prompt if Chrome shows it.
-7. Everything lands in `~/Downloads/chatgpt-images/`
+6. Allow the Chrome "multiple downloads" prompt / bar if it appears for chatgpt.com (required for bulk; the extension uses the native downloads API to put files in a subfolder).
+7. Check inside `~/Downloads/chatgpt-images/` (not the top-level Downloads root). The button will briefly show a success message with the location. Metadata JSON is always produced even on partial image results.
 
 You can repeat the process on different folders — files with the same name will get `(1)`, `(2)`, etc.
 
