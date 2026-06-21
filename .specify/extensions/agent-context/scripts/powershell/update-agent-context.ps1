@@ -180,7 +180,7 @@ if (-not $PlanPath) {
             $PlanPath = [System.IO.Path]::GetRelativePath($ProjectRoot, $candidate.FullName).Replace('\','/')
         }
     } catch {
-        # Non-fatal: continue without a plan path.
+        Write-Verbose "Plan path discovery failed; continuing without a plan path."
     }
 }
 
