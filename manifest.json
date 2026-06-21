@@ -5,7 +5,10 @@
   "description": "One-click bulk download images from ChatGPT Library folders and the /images/ gallery, plus a metadata JSON with conversation dates, update times, and folder structure.",
   "homepage_url": "https://github.com/kairin/chatgpt-bulk-downloader",
   "host_permissions": ["https://chatgpt.com/*"],
-  "permissions": ["downloads"],
+  "permissions": ["downloads", "storage"],
+  "background": {
+    "service_worker": "background.js"
+  },
   "content_scripts": [
     {
       "matches": ["https://chatgpt.com/library/*", "https://chatgpt.com/images/*"],
