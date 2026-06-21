@@ -22,3 +22,12 @@ node_modules/
 # Temporary
 tmp/
 temp/
+
+# Playwright session artifacts (not for the repo)
+.playwright-cli/
+# direnv (project environment)
+.envrc.local
+.env
+.env.local
+**/.envrc.local
+**/.env

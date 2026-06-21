@@ -17,7 +17,7 @@ No more clicking individual "Download" buttons or selecting in batches. Everythi
   - Folder & directory structure (via the same `files/library` APIs the site uses)
   - Image nodes with their metadata
   - Full recent conversations list
-- Downloads go into `~/Downloads/chatgpt-images/` (organized subfolder, just like popular exporter tools)
+- Before any downloads, you are required to confirm the exact subfolder name in a modal (with a button to open your default Downloads folder for reference). Everything lands inside that subfolder under your normal browser Downloads location.
 - Smart name extraction (preserves original filenames like `vlcsnap-...png`, `image(1289).png` when available; falls back gracefully on the gallery)
 - Handles lazy-loaded / virtualized grids with aggressive scrolling
 - Client-side only — no servers, no data exfiltration
@@ -48,15 +48,16 @@ We plan to publish to the Chrome Web Store once we have a few more users and pol
 4. Click the green floating button in the bottom-right:
    - `⬇️ Bulk Download Folder (+JSON)` on library pages
    - `⬇️ Bulk Download Images (+JSON)` on the gallery
+   - A modal will immediately appear requiring you to confirm or edit the destination subfolder name. Use the "Show my default Downloads folder" button to open your actual Downloads directory so you can decide on a good location (e.g. "chatgpt-exports/2024-june"). Downloads will not start until you confirm.
 5. The extension will:
    - Scroll aggressively to load lazy/virtualized images
    - Collect all qualifying images from the OpenAI CDN
    - Download a `*-metadata.json` file with full folder + conversation timing data
    - Trigger the image downloads (staggered to be browser-friendly)
-6. Allow the "multiple downloads" prompt if Chrome shows it.
-7. Everything lands in `~/Downloads/chatgpt-images/`
+6. On clicking the bulk button, a modal will appear asking you to confirm or change the destination subfolder name. You can click "Show my default Downloads folder" to open the folder in your file manager so you know exactly where things will land. This is required — the extension will not download until you confirm a location.
+7. After confirming, allow the Chrome "multiple downloads" prompt if it appears. All files will go into the subfolder you chose (under your normal Downloads directory). Check there (the button shows the path). The metadata JSON is always written even if some images fail.
 
-You can repeat the process on different folders — files with the same name will get `(1)`, `(2)`, etc.
+You can repeat the process on different folders — files with the same name will get `(1)`, `(2)`, etc. (all under the same configurable subfolder).
 
 ## The Metadata JSON
 
@@ -64,7 +65,7 @@ This is the main reason many people wanted this tool.
 
 When you trigger a bulk download on a library folder, you also get a file like:
 
-- `chatgpt-folder-6a37b386-metadata.json`
+- `chatgpt-folder-6a37b386-metadata.json` (the prefix "chatgpt-folder-..." comes from the code; the containing folder is <DOWNLOAD_FOLDER>/ )
 
 It contains (raw from ChatGPT's own APIs):
 
