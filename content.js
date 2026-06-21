@@ -289,8 +289,6 @@ function addBulkDownloadButton() {
         const ext = name.match(/\.[^.]+$/) || ['.png'];
         name = name.replace(/\.[^.]+$/, '') + `-${i+1}` + ext;
       }
-      // Force .png name for full quality original photo delivery (conversion in bg if needed)
-      name = name.replace(/\.[^.]+$/, '') + '.png';
       downloads.push({ url: downloadUrl, name, originalSrc: img.src, fileId: extractFileId(downloadUrl) || extractFileId(img.src) });
     });
 
@@ -345,8 +343,6 @@ function addBulkDownloadButton() {
           // Default to png for "original" assets (many uploads are PNG; WebP is often the compressed display version)
           name += '.' + (m ? m[1] : 'png');
         }
-        // Force .png name for full quality original photo delivery (conversion in bg if needed)
-        name = name.replace(/\.[^.]+$/, '') + '.png';
         apiImageCandidates.push({ url: downloadUrl, name, origin: 'api', originalSrc: url });
       });
     };
@@ -418,7 +414,15 @@ function addBulkDownloadButton() {
           const ctx = canvas.getContext('2d');
           ctx.drawImage(bitmap, 0, 0);
           blob = await canvas.convertToBlob({type: 'image/png'});
-          finalName = finalName.replace(/\.webp$/i, '.png');
+          finalName = finalName.replace(/\.[^.]+$/, '') + '.png';
+        } else {
+          const extByType = {
+            'image/png': '.png',
+            'image/jpeg': '.jpg',
+            'image/gif': '.gif'
+          };
+          const ext = extByType[blob.type];
+          if (ext) finalName = finalName.replace(/\.[^.]+$/, '') + ext;
         }
         // Data URLs survive the content-script → background hop (blob: URLs often do not).
         const dataUrl = await blobToDataUrl(blob);
