@@ -34,9 +34,9 @@ No more clicking individual "Download" buttons or selecting in batches. Everythi
 5. Select the `chatgpt-bulk-downloader` folder
 6. Pin the extension if desired (it shows no toolbar icon — it only injects on `chatgpt.com`)
 
-### Future
+### Chrome Web Store
 
-We plan to publish to the Chrome Web Store once we have a few more users and polish.
+Not published there yet. Install from source as described above.
 
 ## Usage
 
@@ -54,10 +54,43 @@ We plan to publish to the Chrome Web Store once we have a few more users and pol
    - Collect all qualifying images from the OpenAI CDN
    - Download a `*-metadata.json` file with full folder + conversation timing data
    - Trigger the image downloads (staggered to be browser-friendly)
-6. On clicking the bulk button, a modal will appear asking you to confirm or change the destination subfolder name. You can click "Show my default Downloads folder" to open the folder in your file manager so you know exactly where things will land. This is required — the extension will not download until you confirm a location.
-7. After confirming, allow the Chrome "multiple downloads" prompt if it appears. All files will go into the subfolder you chose (under your normal Downloads directory). Check there (the button shows the path). The metadata JSON is always written even if some images fail.
+6. After confirming, allow the Chrome "multiple downloads" prompt if it appears. All files will go into the subfolder you chose (under your normal Downloads directory). Check there (the button shows the path). The metadata JSON is always written even if some images fail.
 
 You can repeat the process on different folders — files with the same name will get `(1)`, `(2)`, etc. (all under the same configurable subfolder).
+
+## Screenshots
+
+These are real UI captures from testing. They use generic example images and contain no personal data.
+
+### Destination chooser
+
+Before any downloads start, you must confirm where files go. The extension creates a subfolder under your browser's default Downloads directory.
+
+![Destination chooser modal](screenshots/chooser-modal-safe.png)
+
+### Bulk download button
+
+On library folders and the `/images/` gallery, a green floating button appears in the bottom-right corner.
+
+![Bulk download button on an image page](screenshots/test-05-native-save-button.png)
+
+### Download in progress
+
+While scrolling, collecting images, and fetching metadata, the button shows a loading state.
+
+![Loading images and metadata](screenshots/test-03-downloading-progress.png)
+
+### Cloudflare challenge
+
+If you land on a "Verify you are human" screen, interact with the page normally (move the mouse, scroll, click) until the real ChatGPT UI loads. The extension only runs on the live site.
+
+![Cloudflare human verification screen](screenshots/current-after-press.png)
+
+### Full-resolution downloads
+
+Images are pulled at full resolution (not 512×512 grid thumbnails). This test summary compares extension downloads against ChatGPT's native Save button.
+
+![Full-resolution download verification](screenshots/test-06-results-summary.png)
 
 ## The Metadata JSON
 
@@ -81,7 +114,7 @@ This lets you reconstruct exactly when conversations happened and how the folder
 ## Privacy & Security
 
 - **Everything runs in your browser** on `chatgpt.com` pages only.
-- We only use the exact same authenticated API endpoints that the ChatGPT web UI already calls (`/backend-api/files/library/...`, `/backend-api/conversations`, etc.).
+- The extension only uses the same authenticated API endpoints that the ChatGPT web UI already calls (`/backend-api/files/library/...`, `/backend-api/conversations`, etc.).
 - No external servers. No telemetry. No analytics.
 - Your images and metadata never leave your machine except for the normal download to your local `Downloads` folder.
 - Source code is fully open — audit it yourself.
@@ -89,7 +122,7 @@ This lets you reconstruct exactly when conversations happened and how the folder
 ## Development
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/chatgpt-bulk-downloader.git
+git clone https://github.com/kairin/chatgpt-bulk-downloader.git
 cd chatgpt-bulk-downloader
 # Edit manifest.json + content.js
 # Then Load unpacked in chrome://extensions/
@@ -111,7 +144,11 @@ You can manually zip the folder (excluding `.git`, `node_modules`, etc.) or use 
 - [ ] Better icon set + store listing assets
 - [ ] Support for more ChatGPT "projects" / custom folders
 
-Pull requests and issues are very welcome!
+## Project status
+
+This extension is released **as-is** under the MIT license. You may use, fork, and modify it freely.
+
+There is **no support**: no issue triage, no pull request reviews, and no guarantee of updates or replies. ChatGPT's UI and APIs can change at any time and break functionality without notice.
 
 ## License
 
@@ -119,10 +156,8 @@ MIT — see [LICENSE](LICENSE).
 
 ## Credits
 
-Built iteratively with the help of AI tooling while solving real user pain around bulk-exporting ChatGPT libraries and generated images.
-
-If you find it useful, star the repo and share it! 
+Built iteratively with the help of AI tooling while solving real pain around bulk-exporting ChatGPT libraries and generated images.
 
 ---
 
-**Note**: This is an unofficial tool and is not affiliated with OpenAI. Use at your own risk. ChatGPT's UI and APIs can change at any time (we try to stay resilient by using the same endpoints the site uses).
+**Disclaimer**: Unofficial tool, not affiliated with OpenAI. Use at your own risk.
