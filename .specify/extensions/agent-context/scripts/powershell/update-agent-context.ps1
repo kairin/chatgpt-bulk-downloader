@@ -68,7 +68,7 @@ if (Get-Command ConvertFrom-Yaml -ErrorAction SilentlyContinue) {
     try {
         $Options = Get-Content -LiteralPath $ExtConfig -Raw | ConvertFrom-Yaml -ErrorAction Stop
     } catch {
-        # fall through to Python fallback
+        Write-Verbose "ConvertFrom-Yaml failed; using Python fallback."
     }
 }
 
@@ -234,4 +234,4 @@ if (Test-Path -LiteralPath $CtxPath) {
 $newContent = $newContent.Replace("`r`n", "`n").Replace("`r", "`n")
 [System.IO.File]::WriteAllText($CtxPath, $newContent, (New-Object System.Text.UTF8Encoding($false)))
 
-Write-Host "agent-context: updated $ContextFile"
+Write-Output "agent-context: updated $ContextFile"
