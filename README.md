@@ -88,7 +88,7 @@ This lets you reconstruct exactly when conversations happened and how the folder
 ## Development
 
 ```bash
-git clone https://github.com/your-username/chatgpt-bulk-downloader.git
+git clone https://github.com/YOUR_USERNAME/chatgpt-bulk-downloader.git
 cd chatgpt-bulk-downloader
 # Edit manifest.json + content.js
 # Then Load unpacked in chrome://extensions/

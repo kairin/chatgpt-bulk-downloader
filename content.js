@@ -47,9 +47,9 @@ function addBulkDownloadButton() {
     const main = document.querySelector('main') || document.body;
     const isImagesPage = location.pathname.startsWith('/images');
 
-    // --- NEW: Download JSON metadata for conversation dates, times, and folders ---
-    // This uses the same APIs the page uses (files/library for the "d/" folders + conversations list).
-    // In a real logged-in tab this will succeed and save a .json alongside the images.
+    // Download metadata JSON for conversation dates/times and folder structure.
+    // Uses the same backend APIs the ChatGPT web UI calls (files/library/* for directories/folders + conversations list).
+    // When the page context is authenticated, these calls succeed and the JSON is saved next to the images.
     try {
       const folderIdMatch = location.pathname.match(/\/d\/([a-f0-9-]+)/i);
       const folderId = folderIdMatch ? folderIdMatch[1] : null;
