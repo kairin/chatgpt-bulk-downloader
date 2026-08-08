@@ -169,7 +169,7 @@
 - [ ] T047 Code review sweep: remove any remaining magic numbers (25, 350, 80, etc.) or hardcodes into constants/config per constitution V; add comments referencing research decisions
 - [ ] T048 [P] Final README + docs polish for any last claims alignment (per US4/constitution IV)
 - [ ] T049 [P] Verify packaging script produces artifact that passes manual "load unpacked" + icon + functionality check in clean profile
-- [ ] T050 Run any pre-commit / codacy-preflight style checks if configured; prepare suggested commit message for the feature
+- [ ] T050 Run any configured pre-commit checks; prepare suggested commit message for the feature
 
 ---
 
