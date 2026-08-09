@@ -2,6 +2,7 @@
 Sync Impact Report
 - Version change: 1.0 → 1.1 (MINOR)
 - Modified principles/sections: None renamed. Enhanced "Additional Constraints" (added NFRs bullet) and "Development Workflow & Quality Gates" (added NFR + Dependencies call-outs and explicit plan gate expectations) to better support feature-level specs such as 001-harden-downloader (resilience, non-blocking UX, packaging, MV3 constraints).
+- Working-tree edit (undated, not version-bumped): removed the "Use of codacy-preflight (or equivalent)" clause from "Development Workflow & Quality Gates" — Codacy tooling/gates were fully decoupled from this repo and machine; the constitution-compliance sentence otherwise stands.
 - Added sections: "Non-Functional Requirements (NFRs)" guidance (responsiveness/non-blocking on large sets, resilience via retries+validation+partials, name/output safety at scale); "Dependencies and External Factors" subsection (service data sources + best-effort tolerance, browser/MV3 downloads + messaging constraints, CWS/distribution guidelines + assets + review considerations).
 - Removed sections: None.
 - Templates requiring updates:
@@ -52,7 +53,7 @@ Feature plans and implementation must treat the following as first-class inputs 
 ## Development Workflow & Quality Gates
 
 - Speckit SDD is the required process for any feature work (see .specify/workflows/speckit).
-- Constitution compliance is checked on every PR that touches behavior, docs, or packaging. Use of codacy-preflight (or equivalent) before commits/pushes that affect main or release branches.
+- Constitution compliance is checked on every PR that touches behavior, docs, or packaging.
 - Changes that would make README claims inaccurate, or that re-introduce silent failure modes for metadata/images, require spec updates + reviewer sign-off against the relevant user stories and success criteria.
 - For hardening/resilience work, measurable criteria (e.g., "metadata JSON produced on 100% of activations even on partial failure", "subfolder delivered when platform API available", non-blocking behavior on 200+ item sets) are non-negotiable.
 - The AGENTS.md file must always point to a current concrete plan (via the agent-context extension) so that future agents and humans have the right context.
